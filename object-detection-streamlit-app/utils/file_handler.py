@@ -5,6 +5,9 @@ from typing import Dict, Any
 import streamlit as st
 import requests
 import re
+import ipaddress
+import socket
+from urllib.parse import urlsplit
 from PIL import Image
 import io
 
@@ -135,6 +138,9 @@ def download_image_from_url(url: str) -> tuple:
         # Validate URL format
         if not is_valid_url(url):
             return None, None, "Invalid URL format"
+
+        if not is_safe_remote_url(url):
+            return None, None, "URL points to a private or local network address"
         
         # Set headers to mimic a browser request
         headers = {
@@ -142,7 +148,11 @@ def download_image_from_url(url: str) -> tuple:
         }
         
         # Download the image with timeout
-        response = requests.get(url, headers=headers, timeout=10, stream=True)
+        # Do not follow redirects automatically: a public URL could redirect
+        # to localhost or another private network address after validation.
+        response = requests.get(
+            url, headers=headers, timeout=10, stream=True, allow_redirects=False
+        )
         response.raise_for_status()
         
         # Check if content type is image
@@ -192,6 +202,33 @@ def is_valid_url(url: str) -> bool:
         r'(?::\d+)?'  # optional port
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
     return url_pattern.match(url) is not None
+
+
+def is_safe_remote_url(url: str) -> bool:
+    """Return whether a URL resolves only to a public network address.
+
+    This prevents the image fetcher from being used to access localhost,
+    private RFC1918 ranges, link-local addresses, or other reserved hosts.
+    """
+    try:
+        parsed = urlsplit(url)
+        if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+            return False
+        if parsed.username or parsed.password:
+            return False
+
+        addresses = socket.getaddrinfo(parsed.hostname, parsed.port, type=socket.SOCK_STREAM)
+        return bool(addresses) and all(
+            not ipaddress.ip_address(address[4][0]).is_private
+            and not ipaddress.ip_address(address[4][0]).is_loopback
+            and not ipaddress.ip_address(address[4][0]).is_link_local
+            and not ipaddress.ip_address(address[4][0]).is_reserved
+            and not ipaddress.ip_address(address[4][0]).is_multicast
+            and not ipaddress.ip_address(address[4][0]).is_unspecified
+            for address in addresses
+        )
+    except (ValueError, OSError, socket.gaierror):
+        return False
 
 def get_file_extension_from_url(url: str, content_type: str) -> str:
     """

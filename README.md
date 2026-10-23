@@ -2,6 +2,22 @@
 
 > **A modern, user-friendly web application for real-time object detection powered by YOLOv8 and Streamlit**
 
+Repository: https://github.com/0xyz-exe/object-detection-streamlit-app
+
+## Screenshots
+
+### Streamlit Web Dashboard & Model Selector
+![Streamlit dashboard](docs/screenshots/01_streamlit_dashboard.png)
+
+### Static Image Object Detection & Bounding Boxes
+![Image detection](docs/screenshots/02_image_detection.png)
+
+### Video Processing & Detection Analytics
+![Video analytics](docs/screenshots/03_video_analytics.png)
+
+### Model Confidence & NMS Threshold Settings
+![Threshold settings](docs/screenshots/04_settings.png)
+
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.28%2B-red.svg)](https://streamlit.io)
 [![YOLOv8](https://img.shields.io/badge/YOLOv8-Ultralytics-green.svg)](https://github.com/ultralytics/ultralytics)
@@ -35,7 +51,7 @@ This application provides an intuitive web interface for object detection using 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/wondrv/object-detection-streamlit-app.git
+   git clone https://github.com/0xyz-exe/object-detection-streamlit-app.git
    cd object-detection-streamlit-app
    ```
 
